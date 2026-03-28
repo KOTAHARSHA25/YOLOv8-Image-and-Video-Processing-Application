@@ -16,9 +16,20 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))
 
 app = Flask(__name__)
 
-def predict(opt):
+# Pre-load all available models into memory so it's super fast when users switch
+models = {
+    'Detection': YOLO('yolov8s.pt'),
+    'Segmentation': YOLO('yolov8s-seg.pt'),
+    'Pose Estimation': YOLO('yolov8s-pose.pt'),
+}
+# Note: yolov8s-cls.pt (Classification) returns a different result structure 
+# which doesn't support the same streaming plot() out-of-the-box in this specific loop,
+# so we stick to the 3 main visual models.
 
-    results = model(**vars(opt), stream=True)
+def predict(opt, model_type="Detection"):
+
+    current_model = models.get(model_type, models['Detection'])
+    results = current_model(**vars(opt), stream=True)
 
     for result in results:
         if opt.save_txt:
@@ -51,9 +62,11 @@ def cams():
 
 @app.route('/predict', methods=['GET', 'POST'])
 def video_feed():
+    model_type = "Detection" # Default
     if request.method == 'POST':
         uploaded_file = request.files.get('myfile')
         save_txt = request.form.get('save_txt', 'F')
+        model_type = request.form.get('model_type', 'Detection') # Retrieve selected model
 
         if uploaded_file:
             source = Path(__file__).parent / raw_data / uploaded_file.filename
@@ -66,8 +79,9 @@ def video_feed():
             
     elif request.method == 'GET':
         opt.source, opt.save_txt = update_options(request)
+        model_type = request.args.get('model_type', 'Detection')
 
-    return Response(predict(opt), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(predict(opt, model_type), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -108,5 +122,5 @@ if __name__ == '__main__':
     raw_data = Path(opt.raw_data)
     raw_data.mkdir(parents=True, exist_ok=True)
     delattr(opt, 'raw_data')
-    model = YOLO(str(opt.model))
+    # model = YOLO(str(opt.model)) # Moved to global dictionary cache
     app.run(host='0.0.0.0', port=port, debug=False)

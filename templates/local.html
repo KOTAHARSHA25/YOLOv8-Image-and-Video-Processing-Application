@@ -84,8 +84,18 @@
           <div id="preview" class="preview-container">
             <img id="preview-img" src="" alt="Preview">
           </div>
+          
+          <div class="mb-3">
+            <label for="modelSelect" class="form-label font-weight-bold mt-2">Select YOLO Task:</label>
+            <select class="form-select" id="modelSelect" name="model_type" style="width: 100%; padding: 8px; border-radius: 5px;">
+              <option value="Detection">YOLOv8 Object Detection (Default)</option>
+              <option value="Segmentation">YOLOv8 Instance Segmentation</option>
+              <option value="Pose Estimation">YOLOv8 Human Pose Estimation</option>
+            </select>
+          </div>
+
           <div class="btn-container">
-            <input type="submit" id="upload-btn" value="Upload File" class="btn btn-primary" style="display: none;">
+            <input type="submit" id="upload-btn" value="Process File" class="btn btn-primary btn-lg mt-2" style="display: none;">
           </div>
         </form>
       </div>
