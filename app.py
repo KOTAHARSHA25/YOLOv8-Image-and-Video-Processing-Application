@@ -16,19 +16,34 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))
 
 app = Flask(__name__)
 
-# Pre-load all available models into memory so it's super fast when users switch
-models = {
-    'Detection': YOLO('yolov8s.pt'),
-    'Segmentation': YOLO('yolov8s-seg.pt'),
-    'Pose Estimation': YOLO('yolov8s-pose.pt'),
+# Map models to files, but DO NOT pre-load them to save RAM!
+# Render's Free Tier only has 512MB of RAM. Loading all 3 at once will crash the server (OOM Error 502).
+model_files = {
+    'Detection': 'yolov8s.pt',
+    'Segmentation': 'yolov8s-seg.pt',
+    'Pose Estimation': 'yolov8s-pose.pt',
 }
-# Note: yolov8s-cls.pt (Classification) returns a different result structure 
-# which doesn't support the same streaming plot() out-of-the-box in this specific loop,
-# so we stick to the 3 main visual models.
+
+# Global variables for single-model lazy loading
+current_loaded_type = None
+loaded_yolo = None
+
+def get_model(model_type):
+    global current_loaded_type, loaded_yolo
+    import gc
+    # If the user switches models, overwrite the old one and clear memory
+    if current_loaded_type != model_type:
+        loaded_yolo = None 
+        gc.collect() # Force free unused RAM immediately
+        
+        target_file = model_files.get(model_type, 'yolov8s.pt')
+        loaded_yolo = YOLO(target_file)
+        current_loaded_type = model_type
+        
+    return loaded_yolo
 
 def predict(opt, model_type="Detection"):
-
-    current_model = models.get(model_type, models['Detection'])
+    current_model = get_model(model_type)
     results = current_model(**vars(opt), stream=True)
 
     for result in results:
