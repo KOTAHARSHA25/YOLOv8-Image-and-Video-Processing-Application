@@ -8,6 +8,7 @@ app_port: 7860
 pinned: false
 short_description: YOLOv8 Object Detection, Segmentation & Pose Estimation
 ---
+
 # YOLOv8-Image-and-Video-Processing-Application
 
 ## 🚀 Introduction
@@ -30,31 +31,24 @@ This project demonstrates the capabilities of the YOLOv8 model for image classif
    ```
 
 ## 🎮 Usage
-### Running the Application
+### Running the Application Local
+To run the web app on your local machine, simply run:
 ```bash
-python app.py --weights <model_weights> --source <input_source> --device <cpu/gpu>
+python app.py
 ```
-Example:
-```bash
-python app.py --weights yolov8s.pt --source data/images --device cpu
-```
-### Command Line Arguments
-- `--weights`: Path to the YOLOv8 model weights file (default is `yolov8s.pt`).
-- `--source`: Directory path for input images or videos.
-- `--device`: Specify the device to run the model on (`cpu` or `gpu`).
+Then, open your web browser and go to `http://localhost:7860`.
+
+### Selecting a Model
+The application now supports **dynamic model selection directly from the Web UI**. You no longer need to pass command line arguments for models.
+1. Upload your image or video on the web page.
+2. Select your desired model (Detection, Segmentation, Pose) from the drop-down menu.
+3. The application will automatically download the required YOLOv8 weights (if not already downloaded) and process your image/video!
 
 ## 🖥️ User Interface
-The project provides a user-friendly interface through HTML templates for interacting with the application and selecting different input sources and tasks.
-
-
-## 📊 Model Usage
-- For object detection: `python app.py --weights yolov8s.pt`
-- For instance segmentation: `python app.py --weights yolov8s-seg.pt`
-- For image classification: `python app.py --weights yolov8s-cls.pt`
-- For human pose estimation: `python app.py --weights yolov8s-pose.pt`
+The project provides a user-friendly interface through HTML templates. You can interact with the application, upload media, and choose your preferred computer vision task (Detection, Segmentation, Pose) natively in the browser without touching the command line.
 
 ## 🚀 Deployment
-Run the `app.py` script with the desired model and input source to start the Flask application on the specified port. (default is 7860).
+This application is fully Dockerized and deployed continuously on Hugging Face Spaces for free.
 
 🚀 **Live Demo on Hugging Face Spaces:** [https://huggingface.co/spaces/HARSHAKOTA25/YOLOv8-Image-and-Video-Processing-Application](https://huggingface.co/spaces/HARSHAKOTA25/YOLOv8-Image-and-Video-Processing-Application)
 
@@ -66,4 +60,3 @@ This project showcases the YOLOv8 model's capabilities for various image process
 
 ## 🌟 Future Enhancements
 Potential future enhancements include real-time processing, expanded training datasets, multi-camera support, advanced tracking algorithms, and complex interaction recognition.
-
