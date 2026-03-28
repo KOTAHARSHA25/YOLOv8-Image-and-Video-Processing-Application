@@ -16,31 +16,56 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))
 
 app = Flask(__name__)
 
-# Map models to files, but DO NOT pre-load them to save RAM!
-# Render's Free Tier only has 512MB of RAM. Loading all 3 at once will crash the server (OOM Error 502).
-model_files = {
-    'Detection': 'yolov8s.pt',
-    'Segmentation': 'yolov8s-seg.pt',
-    'Pose Estimation': 'yolov8s-pose.pt',
-}
+# Initialize default options so it doesn't crash under Gunicorn/WSGI
+class DefaultOpt:
+    source = '0'
+    save_txt = False
+    conf = 0.25
+    iou = 0.7
+    imgsz = [640]
+    half = False
+    device = ''
+    show = False
+    save = False
+    save_conf = False
+    save_crop = False
+    show_labels = True
+    show_conf = True
+    max_det = 300
+    vid_stride = 1
+    stream_buffer = False
+    line_width = None
+    visualize = False
+    augment = False
+    agnostic_nms = False
+    retina_masks = False
+    classes = None
+    show_boxes = True
+    exist_ok = False
+    project = ROOT / 'runs/detect'
+    name = 'exp'
+    dnn = False
+    raw_data = ROOT / 'data/raw'
 
-# Global variables for single-model lazy loading
-current_loaded_type = None
-loaded_yolo = None
+opt = DefaultOpt()
 
+import gc
+
+# Memory-safe model lazy loader
+models_cache = {}
 def get_model(model_type):
-    global current_loaded_type, loaded_yolo
-    import gc
-    # If the user switches models, overwrite the old one and clear memory
-    if current_loaded_type != model_type:
-        loaded_yolo = None 
-        gc.collect() # Force free unused RAM immediately
-        
-        target_file = model_files.get(model_type, 'yolov8s.pt')
-        loaded_yolo = YOLO(target_file)
-        current_loaded_type = model_type
-        
-    return loaded_yolo
+    global models_cache
+    if model_type not in models_cache:
+        # Clear out other models to prevent Render Free Tier OOM (512MB RAM Limit)
+        models_cache.clear()
+        gc.collect()
+        if model_type == 'Segmentation':
+            models_cache[model_type] = YOLO('yolov8s-seg.pt')
+        elif model_type == 'Pose Estimation':
+            models_cache[model_type] = YOLO('yolov8s-pose.pt')
+        else:
+            models_cache[model_type] = YOLO('yolov8s.pt')
+    return models_cache[model_type]
 
 def predict(opt, model_type="Detection"):
     current_model = get_model(model_type)
@@ -75,28 +100,48 @@ def rtsp():
 def cams():
     return render_template('cams.html')
 
-@app.route('/predict', methods=['GET', 'POST'])
+@app.route('/upload', methods=['POST'])
+def handle_upload():
+    # New route for AJAX uploads to prevent DOM breaking
+    if 'myfile' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    uploaded_file = request.files['myfile']
+    if uploaded_file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    from werkzeug.utils import secure_filename
+    filename = secure_filename(uploaded_file.filename)
+    
+    # Save the file securely
+    raw_data_dir = Path(__file__).parent / 'data' / 'raw'
+    raw_data_dir.mkdir(parents=True, exist_ok=True)
+    source_path = raw_data_dir / filename
+    uploaded_file.save(str(source_path))
+
+    return jsonify({
+        'success': True, 
+        'source': str(source_path.resolve())
+    })
+
+@app.route('/predict', methods=['GET'])
 def video_feed():
-    model_type = "Detection" # Default
-    if request.method == 'POST':
-        uploaded_file = request.files.get('myfile')
-        save_txt = request.form.get('save_txt', 'F')
-        model_type = request.form.get('model_type', 'Detection') # Retrieve selected model
+    import copy
+    req_opt = copy.copy(opt)
+    
+    source_query = request.args.get('source')
+    save_txt_query = request.args.get('save_txt')
 
-        if uploaded_file:
-            source = Path(__file__).parent / raw_data / uploaded_file.filename
-            uploaded_file.save(source)
-            opt.source = source
-        else:
-            opt.source, _ = update_options(request)
-            
-        opt.save_txt = True if save_txt == 'T' else False
-            
-    elif request.method == 'GET':
-        opt.source, opt.save_txt = update_options(request)
-        model_type = request.args.get('model_type', 'Detection')
-
-    return Response(predict(opt, model_type), mimetype='multipart/x-mixed-replace; boundary=frame')
+    if source_query:
+        req_opt.source = source_query
+    if save_txt_query == 'T':
+        req_opt.save_txt = True
+    else:
+        req_opt.save_txt = False
+        
+    model_type = request.args.get('model_type', 'Detection')
+    
+    return Response(predict(req_opt, model_type), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -132,7 +177,7 @@ if __name__ == '__main__':
     parser.add_argument('--port', default=7860, type=int, help='port deployment')
     opt, unknown = parser.parse_known_args()
     print_args(vars(opt))
-    port = int(os.environ.get('PORT', opt.port))
+    port = opt.port
     delattr(opt, 'port')
     raw_data = Path(opt.raw_data)
     raw_data.mkdir(parents=True, exist_ok=True)

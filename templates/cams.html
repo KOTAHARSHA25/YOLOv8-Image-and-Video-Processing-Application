@@ -4,49 +4,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcam Stream Analysis</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
-  <style>
-        body {
-            overflow: hidden;
-        }
-    </style>
+    <title>Webcam Analysis | NexVision AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/theme.css') }}" rel="stylesheet">
 </head>
 
 <body>
-    <a href="/" class="back-btn mt-3 ms-3" style="position:absolute; top:20px; color:#06b6d4; text-decoration:none;">&larr; Back to Dashboard</a>
-  <div class="container my-5">
-        <h1 class="brand-title text-center mb-5 mt-4">Webcam Stream Analysis</h1>
-        <div class="row justify-content-center">
-            <div class="text-center">
-                <button type="button" class="btn btn-primary btn-lg mt-3" id="analyze-btn">Analyze</button>
-            </div>
-        </div>
-    </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-    <script>
-        "use strict";
-        const analyzeBtn = document.getElementById('analyze-btn');
-        const previewVideo = document.getElementById('preview-video');
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(function (stream) {
-                    const webcamUrl = window.URL.createObjectURL(stream);
-                    previewVideo.srcObject = stream;
-                })
-                .catch(function (error) {
-                    console.error('Error accessing webcam:', error);
-                });
-        } else {
-            console.error('getUserMedia is not supported by this browser.');
-        }
+  <div class="glass-orb top-left"></div>
+  <div class="glass-orb bottom-right"></div>
 
-        analyzeBtn.addEventListener('click', function () {
-            const local_server_url = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
-            const redirectUrl = `${local_server_url}/predict?source=0`;
-            window.location.href = redirectUrl;
-        });
-    </script>
+  <div class="container my-5 content-wrapper">
+    <div class="glass-card text-center mb-5">
+      <h1 class="font-orbitron text-primary-cyan mb-2">WEBCAM INFERENCE</h1>
+      <p class="lead text-light mb-0">Local machine webcam stream with real-time YOLOv8 rendering.</p>
+      <a href="/" class="btn btn-outline-cyan mt-3 btn-sm">&larr; Back to Dashboard</a>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-md-10">
+        <div class="glass-card">
+          
+          <!-- STATE 1: Selection Form -->
+          <div id="input-state" class="text-center">
+              <div class="mb-4 text-start">
+                <label for="modelSelect" class="form-label text-info font-orbitron">Neural Network Task:</label>
+                <select class="form-select bg-dark text-light border-secondary" id="modelSelect" name="model_type">
+                  <option value="Detection">YOLOv8 Object Detection</option>
+                  <option value="Segmentation">YOLOv8 Instance Segmentation</option>
+                  <option value="Pose Estimation">YOLOv8 Human Pose Estimation</option>
+                </select>
+              </div>
+
+              <div class="d-grid mt-4">
+                <button type="button" class="btn btn-cyan btn-lg font-orbitron" id="analyze-btn" onclick="startStream()">INITIALIZE WEBCAM</button>
+              </div>
+              <p class="text-muted mt-3 small">Requires server to be running on localhost/same network block as webcam host.</p>
+          </div>
+
+          <!-- STATE 2: Stream Output -->
+          <div id="result-state" class="text-center" style="display: none;">
+            <div class="result-header d-flex justify-content-between align-items-center mb-3">
+              <h4 class="font-orbitron text-success mb-0">LIVE INFERENCE</h4>
+              <button class="btn btn-sm btn-outline-danger" onclick="resetApp()">Close Stream &times;</button>
+            </div>
+            
+            <div class="inference-container">
+              <img id="result-stream" class="img-fluid rounded border border-success" alt="Inference Stream will appear here">
+            </div>
+
+            <div class="mt-3">
+               <button class="btn btn-outline-info btn-sm" onclick="downloadSnapshot()">Capture Snapshot 📷</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const modelSelect = document.getElementById('modelSelect');
+    const stateInput = document.getElementById('input-state');
+    const stateResult = document.getElementById('result-state');
+    const resultStream = document.getElementById('result-stream');
+
+    function startStream() {
+      const modelType = modelSelect.value;
+      
+      // Swap UI state
+      stateInput.style.display = 'none';
+      stateResult.style.display = 'block';
+
+      // Source = 0 for default webcam
+      const streamUrl = '/predict?source=0&model_type=' + encodeURIComponent(modelType);
+      resultStream.src = streamUrl;
+    }
+
+    function downloadSnapshot() {
+      const canvas = document.createElement('canvas');
+      canvas.width = resultStream.naturalWidth || resultStream.width || 640;
+      canvas.height = resultStream.naturalHeight || resultStream.height || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(resultStream, 0, 0);
+      
+      const link = document.createElement('a');
+      link.download = 'NexVision_Webcam_Snapshot.jpg';
+      link.href = canvas.toDataURL('image/jpeg');
+      link.click();
+    }
+
+    function resetApp() {
+      resultStream.src = "";
+      stateInput.style.display = 'block';
+      stateResult.style.display = 'none';
+    }
+  </script>
 </body>
 </html>

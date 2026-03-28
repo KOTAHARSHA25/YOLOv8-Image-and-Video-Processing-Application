@@ -1,18 +1,17 @@
----
-title: YOLOv8 Image & Video Processing
-emoji: 🎥
-colorFrom: blue
-colorTo: green
-sdk: docker
-app_port: 7860
-pinned: false
-short_description: YOLOv8 Object Detection, Segmentation & Pose Estimation
----
+# NexVision AI: YOLOv8 Image and Video Processing
 
-# YOLOv8-Image-and-Video-Processing-Application
+<div align="center">
+  <h3><strong><a href="https://yolov8-image-and-video-processing.onrender.com/">🚀 Live Demo (Render)</a></strong></h3>
+</div>
 
 ## 🚀 Introduction
-This project demonstrates the capabilities of the YOLOv8 model for image classification, object detection, and human pose estimation. It accurately identifies and classifies objects, detects various segments, and estimates human poses in both images and videos.
+NexVision AI is an advanced Computer Vision Engine powered by **PyTorch & Ultralytics YOLOv8**. It accurately identifies and classifies objects, detects various instance segments, and estimates human poses across static images, YouTube streams, local webcams, and RTSP IP cameras. The application utilizes a customized **Cyber Glassmorphism UI** with full AJAX single-page capabilities.
+
+## 🗂️ Features
+- **Local Media**: Upload images and videos for detection, segmentation, and pose estimation.
+- **YouTube Streams**: Pipe live YouTube videos directly into the inference engine.
+- **RTSP Streams**: Connect to IP security cameras.
+- **Live Webcam**: Stream dynamically from your local system.
 
 ## 📥 Installation
 1. Clone the repository:
@@ -36,27 +35,23 @@ To run the web app on your local machine, simply run:
 ```bash
 python app.py
 ```
-Then, open your web browser and go to `http://localhost:7860`.
+Then, open your web browser and go to `http://127.0.0.1:7860`.
 
 ### Selecting a Model
-The application now supports **dynamic model selection directly from the Web UI**. You no longer need to pass command line arguments for models.
-1. Upload your image or video on the web page.
-2. Select your desired model (Detection, Segmentation, Pose) from the drop-down menu.
-3. The application will automatically download the required YOLOv8 weights (if not already downloaded) and process your image/video!
-
-## 🖥️ User Interface
-The project provides a user-friendly interface through HTML templates. You can interact with the application, upload media, and choose your preferred computer vision task (Detection, Segmentation, Pose) natively in the browser without touching the command line.
+The application supports **dynamic model selection directly from the Web UI**.
+1. Choose an input source (Local Media, YouTube, RTSP, or Webcam).
+2. Select your desired model (Detection, Segmentation, Pose Estimation) from the drop-down menu.
+3. Live inference stream will play natively within your browser window using pure Javascript, allowing you to seamlessly start and stop feeds without reloading the page.
 
 ## 🚀 Deployment
-This application is fully Dockerized and deployed continuously on Hugging Face Spaces for free.
+This application has been engineered to run within the memory constraints of Render.com's infrastructure using lazy-loading PyTorch model orchestration to prevent Out-Of-Memory (OOM) 502 limits.
 
-🚀 **Live Demo on Hugging Face Spaces:** [https://huggingface.co/spaces/HARSHAKOTA25/YOLOv8-Image-and-Video-Processing-Application](https://huggingface.co/spaces/HARSHAKOTA25/YOLOv8-Image-and-Video-Processing-Application)
+🚀 **Live Deployment URL:** [https://yolov8-image-and-video-processing.onrender.com/](https://yolov8-image-and-video-processing.onrender.com/)
 
-## 💻 Source Code
-Refer to `app.py` for the main application logic, including prediction functions and Flask routes.
+## 💻 Tech Stack
+- **Backend**: Flask / Python
+- **ML Architecture**: OpenCV, PyTorch, Ultralytics YOLOv8
+- **Frontend**: Custom Glassmorphism Theme (HTML/CSS/JS/AJAX API)
 
 ## ✅ Conclusion
-This project showcases the YOLOv8 model's capabilities for various image processing tasks, providing accurate results for image classification, object detection, and human pose estimation.
-
-## 🌟 Future Enhancements
-Potential future enhancements include real-time processing, expanded training datasets, multi-camera support, advanced tracking algorithms, and complex interaction recognition.
+This project demonstrates robust streaming, single-page application (SPA) paradigms, and highly decoupled REST backend handling suitable for a production Computer Vision engineering portfolio.
