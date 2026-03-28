@@ -1,3 +1,13 @@
+---
+title: YOLOv8 Image & Video Processing
+emoji: 🎥
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+pinned: false
+short_description: YOLOv8 Object Detection, Segmentation & Pose Estimation
+---
 # YOLOv8-Image-and-Video-Processing-Application
 
 ## 🚀 Introduction
@@ -56,3 +66,4 @@ This project showcases the YOLOv8 model's capabilities for various image process
 
 ## 🌟 Future Enhancements
 Potential future enhancements include real-time processing, expanded training datasets, multi-camera support, advanced tracking algorithms, and complex interaction recognition.
+
