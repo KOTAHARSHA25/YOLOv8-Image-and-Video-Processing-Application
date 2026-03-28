@@ -117,7 +117,7 @@ if __name__ == '__main__':
     parser.add_argument('--port', default=7860, type=int, help='port deployment')
     opt, unknown = parser.parse_known_args()
     print_args(vars(opt))
-    port = opt.port
+    port = int(os.environ.get('PORT', opt.port))
     delattr(opt, 'port')
     raw_data = Path(opt.raw_data)
     raw_data.mkdir(parents=True, exist_ok=True)
