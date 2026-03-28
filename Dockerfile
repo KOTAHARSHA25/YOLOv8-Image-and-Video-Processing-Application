@@ -6,20 +6,24 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+# Fix for Hugging Face Spaces non-root user (Required for Docker Spaces)
+RUN useradd -m -u 1000 user
+USER user
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH
+
+WORKDIR $HOME/app
 
 # Copy requirement list and install
-COPY requirements.txt .
+COPY --chown=user requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy all the application files
-COPY . .
+COPY --chown=user . .
 
-# Ensure data/raw directory exists and has permissions
-RUN mkdir -p data/raw && chmod -R 777 data/raw
+# Ensure data/raw directory exists
+RUN mkdir -p data/raw
 
-# Expose the port Hugging Face Spaces uses by default for Docker
 EXPOSE 7860
 
-# Run the Flask app
-CMD ["python", "app.py"]
+CMD ["python", "-u", "app.py"]
