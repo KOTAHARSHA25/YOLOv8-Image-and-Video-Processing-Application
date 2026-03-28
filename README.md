@@ -44,7 +44,9 @@ The project provides a user-friendly interface through HTML templates for intera
 - For human pose estimation: `python app.py --weights yolov8s-pose.pt`
 
 ## 🚀 Deployment
-Run the `app.py` script with the desired model and input source to start the Flask application on the specified port (default is 5000).
+Run the `app.py` script with the desired model and input source to start the Flask application on the specified port. (default is 7860).
+
+🚀 **Live Demo on Hugging Face Spaces:** [https://huggingface.co/spaces/HARSHAKOTA25/YOLOv8-Image-and-Video-Processing-Application](https://huggingface.co/spaces/HARSHAKOTA25/YOLOv8-Image-and-Video-Processing-Application)
 
 ## 💻 Source Code
 Refer to `app.py` for the main application logic, including prediction functions and Flask routes.

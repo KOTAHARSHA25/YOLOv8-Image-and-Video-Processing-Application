@@ -100,7 +100,7 @@ if __name__ == '__main__':
     parser.add_argument('--name', default='exp', help='save results to project/name')
     parser.add_argument('--dnn', action='store_true', help='use OpenCV DNN for ONNX inference')
     parser.add_argument('--raw_data', '--raw-data', default=ROOT / 'data/raw', help='save raw images to data/raw')
-    parser.add_argument('--port', default=5000, type=int, help='port deployment')
+    parser.add_argument('--port', default=7860, type=int, help='port deployment')
     opt, unknown = parser.parse_known_args()
     print_args(vars(opt))
     port = opt.port
@@ -109,4 +109,4 @@ if __name__ == '__main__':
     raw_data.mkdir(parents=True, exist_ok=True)
     delattr(opt, 'raw_data')
     model = YOLO(str(opt.model))
-    app.run(port=port, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=False)
